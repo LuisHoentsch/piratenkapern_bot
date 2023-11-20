@@ -49,4 +49,6 @@ class Dice:
 
 
 def mean(l: list[Number]) -> float:
+    if len(l) == 0:
+        return 0
     return sum(l) / len(l)

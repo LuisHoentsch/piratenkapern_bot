@@ -105,7 +105,7 @@ def save_nodes(prefix: str, mainstates: list[Mainstate], interstates: list[Inter
         f.write(json.dumps([state.toJSON() for state in interstates]))
 
 
-def load_nodes(prefix: str):
+def load_nodes(prefix: str) -> tuple[list[Mainstate], list[Interstate]]:
     with open(prefix + "mainstates.json", "r") as f:
         mainstates_json = json.loads(f.read())
     with open(prefix + "interstates.json", "r") as f:
@@ -116,23 +116,27 @@ def load_nodes(prefix: str):
         mainstates[i].children = [interstates[j] for j in mainstates_json[i]["children"]]
     for i in range(len(interstates)):
         interstates[i].children = {mainstates[k]: v for k, v in interstates_json[i]["children"].items()}
+    return mainstates, interstates
 
 
-print("Generating mainstates")
-mainstates = generate_mainstates()
-print("Generating interstates")
-interstates = generate_interstates()
+# print("Generating mainstates")
+# mainstates = generate_mainstates()
+# print("Generating interstates")
+# interstates = generate_interstates()
+#
+# print("Adding children for mainstates")
+# for mainstate in tqdm(mainstates):
+#     add_children_for_mainstate(mainstate, interstates)
+#
+# print("Adding children for interstates")
+# for interstate in tqdm(interstates):
+#     add_children_for_interstate(interstate, mainstates)
+#
+# print("Saving to files")
+# save_nodes("initialized_nodes_", mainstates, interstates)
 
-print("Adding children for mainstates")
-for mainstate in tqdm(mainstates):
-    add_children_for_mainstate(mainstate, interstates)
-
-print("Adding children for interstates")
-for interstate in tqdm(interstates):
-    add_children_for_interstate(interstate, mainstates)
-
-print("Saving to files")
-save_nodes("initialized_nodes_", mainstates, interstates)
+print("Loading nodes")
+mainstates, interstates = load_nodes("initialized_nodes_")
 
 print("Starting optimization loop")
 while State.updated:
