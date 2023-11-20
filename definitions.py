@@ -47,6 +47,14 @@ class Dice:
             k.value: v for k, v in self.counts.items()
         }
 
+    @staticmethod
+    def dice_difference(dice1: "Dice", dice2: "Dice") -> "Dice":
+        return Dice(dice1.counts[DiceFace.GOLD] - dice2.counts[DiceFace.GOLD],
+                    dice1.counts[DiceFace.DIAMOND] - dice2.counts[DiceFace.DIAMOND],
+                    dice1.counts[DiceFace.SKULL] - dice2.counts[DiceFace.SKULL],
+                    dice1.counts[DiceFace.MONKEY] - dice2.counts[DiceFace.MONKEY],
+                    dice1.counts[DiceFace.PARROT] - dice2.counts[DiceFace.PARROT],
+                    dice1.counts[DiceFace.SWORD] - dice2.counts[DiceFace.SWORD])
 
 def mean(l: list[Number]) -> float:
     if len(l) == 0:

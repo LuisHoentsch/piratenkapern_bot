@@ -1,6 +1,6 @@
-import itertools
 import json
 import math
+import pandas as pd
 
 from tqdm import tqdm
 
@@ -42,18 +42,9 @@ def generate_interstates() -> list[Interstate]:
     return [Interstate(dice, card) for dice in combinations for card in Card]
 
 
-def dice_difference(dice1: Dice, dice2: Dice) -> Dice:
-    return Dice(dice1.counts[DiceFace.GOLD] - dice2.counts[DiceFace.GOLD],
-                dice1.counts[DiceFace.DIAMOND] - dice2.counts[DiceFace.DIAMOND],
-                dice1.counts[DiceFace.SKULL] - dice2.counts[DiceFace.SKULL],
-                dice1.counts[DiceFace.MONKEY] - dice2.counts[DiceFace.MONKEY],
-                dice1.counts[DiceFace.PARROT] - dice2.counts[DiceFace.PARROT],
-                dice1.counts[DiceFace.SWORD] - dice2.counts[DiceFace.SWORD])
-
-
 def add_children_for_mainstate(mainstate: Mainstate, interstates: list[Interstate]):
     for interstate in interstates:
-        difference: Dice = dice_difference(mainstate.dice, interstate.dice)
+        difference: Dice = Dice.dice_difference(mainstate.dice, interstate.dice)
         if difference.abs_sum() not in [2, 3] or difference.negative_values():
             continue
         if difference.counts[DiceFace.SKULL] > 1:
@@ -75,27 +66,11 @@ def number_of_possible_paths(difference: Dice) -> int:
 
 def add_children_for_interstate(interstate: Interstate, mainstates: list[Mainstate]):
     for mainstate in mainstates:
-        difference: Dice = dice_difference(mainstate.dice, interstate.dice)
+        difference: Dice = Dice.dice_difference(mainstate.dice, interstate.dice)
         if difference.abs_sum() not in [2, 3] or difference.negative_values() or interstate.card != mainstate.card:
             continue
         assert mainstate not in interstate.children
         interstate.children[mainstate] = number_of_possible_paths(difference)
-
-
-# def add_childern(mainstates: list[Mainstate], interstates: list[Interstate]):
-#     for mainstate, interstate in tqdm(itertools.product(mainstates, interstates)):
-#         difference: Dice = dice_difference(mainstate.dice, interstate.dice)
-#         if difference.abs_sum() not in [2, 3] or difference.negative_values():
-#             continue
-#
-#         if difference.counts[DiceFace.SKULL] == 0 or (difference.counts[DiceFace.SKULL] == 1
-#                                                       and mainstate.card == Card.REROLL_SKULL
-#                                                       and interstate.card == Card.NONE):
-#             mainstate.children.add(interstate)
-#
-#         if interstate.card == mainstate.card:
-#             assert mainstate not in interstate.children
-#             interstate.children[mainstate] = number_of_possible_paths(difference)
 
 
 def save_nodes(prefix: str, mainstates: list[Mainstate], interstates: list[Interstate]):
@@ -119,24 +94,44 @@ def load_nodes(prefix: str) -> tuple[list[Mainstate], list[Interstate]]:
     return list(mainstates.values()), list(interstates.values())
 
 
-# print("Generating mainstates")
-# mainstates = generate_mainstates()
-# print("Generating interstates")
-# interstates = generate_interstates()
-#
-# print("Adding children for mainstates")
-# for mainstate in tqdm(mainstates):
-#     add_children_for_mainstate(mainstate, interstates)
-#
-# print("Adding children for interstates")
-# for interstate in tqdm(interstates):
-#     add_children_for_interstate(interstate, mainstates)
-#
-# print("Saving to files")
-# save_nodes("initialized_nodes_", mainstates, interstates)
+def to_move_df(mainstates: list[Mainstate]) -> pd.DataFrame:
+    rows_list = []
+    for mainstate in mainstates:
+        rows_list.append({
+            "dice_gold": mainstate.dice.counts[DiceFace.GOLD],
+            "dice_diamond": mainstate.dice.counts[DiceFace.DIAMOND],
+            "dice_skull": mainstate.dice.counts[DiceFace.SKULL],
+            "dice_monkey": mainstate.dice.counts[DiceFace.MONKEY],
+            "dice_parrot": mainstate.dice.counts[DiceFace.PARROT],
+            "dice_sword": mainstate.dice.counts[DiceFace.SWORD],
+            "card": mainstate.card.name,
+            "value": mainstate.value,
+            "ideal_move": json.dumps({k.name: v for k, v in mainstate.ideal_move().counts.items()})
+        })
+    return pd.DataFrame(rows_list)
 
-print("Loading nodes")
-mainstates, interstates = load_nodes("initialized_nodes_")
+
+generate: bool = False
+if generate:
+    print("Generating mainstates")
+    mainstates = generate_mainstates()
+    print("Generating interstates")
+    interstates = generate_interstates()
+
+    print("Adding children for mainstates")
+    for mainstate in tqdm(mainstates):
+        add_children_for_mainstate(mainstate, interstates)
+
+    print("Adding children for interstates")
+    for interstate in tqdm(interstates):
+        add_children_for_interstate(interstate, mainstates)
+
+    print("Saving to files")
+    save_nodes("initialized_nodes_", mainstates, interstates)
+else:
+    print("Loading nodes")
+    # mainstates, interstates = load_nodes("initialized_nodes_")
+    mainstates, interstates = load_nodes("optimized_nodes_")
 
 print("Starting optimization loop")
 while State.updated:
@@ -149,3 +144,6 @@ while State.updated:
 
 print("Saving to files")
 save_nodes("optimized_nodes_", mainstates, interstates)
+
+df_ideal_moves = to_move_df(mainstates)
+df_ideal_moves.to_csv("ideal_moves.csv")

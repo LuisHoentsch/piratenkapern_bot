@@ -15,6 +15,13 @@ class Mainstate(State):
         self.instance: int = Mainstate.index
         Mainstate.index += 1
 
+    def ideal_move(self) -> Dice:
+        ideal_next_states: list[State] = list(filter(lambda x: x.value == self.value, self.children))
+        if len(ideal_next_states) == 0:
+            return Dice(0, 0, 0, 0, 0, 0)
+        else:
+            return Dice.dice_difference(self.dice, ideal_next_states[0].dice)
+
     def fold_value(self) -> int:
         skulls: int = self.dice.counts[DiceFace.SKULL]
 
