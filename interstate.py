@@ -11,17 +11,21 @@ class Interstate(State):
         assert self.dice.sum() in [5, 6]
 
         self.children: dict[Mainstate, int] = {}
-        self.value: float = 0
+        self.value: float = -1000
 
         self.instance: int = Interstate.index
         Interstate.index += 1
 
     def update_value(self):
         children: list[Mainstate] = list(filter(self.no_loop or self.is_higher, self.children.keys()))
-        self.value = mean([child.value for child in children for _ in range(self.children[child])])
+        m = mean([child.value for child in children for _ in range(self.children[child])])
+        assert m >= self.value
+        if m > self.value:
+            self.value = m
+            State.updated = True
 
     def no_loop(self, child: Mainstate) -> bool:
-        return child not in self.children.keys()
+        return self not in child.children
 
     def is_higher(self, child: Mainstate) -> bool:
         return child.value > self.value
@@ -39,7 +43,7 @@ class Interstate(State):
     def fromJSON(json: dict) -> "Interstate":
         dice: Dice = Dice(0, 0, 0, 0, 0, 0)
         for k, v in json["dice"].items():
-            dice.counts[DiceFace(k)] = v
+            dice.counts[DiceFace(int(k))] = v
         card: Card = Card(json["card"])
         interstate: Interstate = Interstate(dice, card)
         interstate.value = json["value"]

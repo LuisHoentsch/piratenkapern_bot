@@ -56,9 +56,9 @@ def add_children_for_mainstate(mainstate: Mainstate, interstates: list[Interstat
         difference: Dice = dice_difference(mainstate.dice, interstate.dice)
         if difference.abs_sum() not in [2, 3] or difference.negative_values():
             continue
-        if difference.counts[DiceFace.SKULL] != 0 and (difference.counts[DiceFace.SKULL] != 1
-                                                       or mainstate.card != Card.REROLL_SKULL
-                                                       or interstate.card != Card.NONE):
+        if difference.counts[DiceFace.SKULL] > 1:
+            continue
+        if difference.counts[DiceFace.SKULL] == 1 and not (mainstate.card == Card.REROLL_SKULL and interstate.card == Card.NONE):
             continue
         mainstate.children.add(interstate)
 
@@ -110,13 +110,13 @@ def load_nodes(prefix: str) -> tuple[list[Mainstate], list[Interstate]]:
         mainstates_json = json.loads(f.read())
     with open(prefix + "interstates.json", "r") as f:
         interstates_json = json.loads(f.read())
-    mainstates = [Mainstate.fromJSON(x) for x in mainstates_json]
-    interstates = [Interstate.fromJSON(x) for x in interstates_json]
+    mainstates: dict[int, Mainstate] = {x["instance"]: Mainstate.fromJSON(x) for x in mainstates_json}  # TODO: list instead?
+    interstates: dict[int, Interstate] = {x["instance"]: Interstate.fromJSON(x) for x in interstates_json}
     for i in range(len(mainstates)):
         mainstates[i].children = [interstates[j] for j in mainstates_json[i]["children"]]
     for i in range(len(interstates)):
-        interstates[i].children = {mainstates[k]: v for k, v in interstates_json[i]["children"].items()}
-    return mainstates, interstates
+        interstates[i].children = {mainstates[int(k)]: v for k, v in interstates_json[i]["children"].items()}
+    return list(mainstates.values()), list(interstates.values())
 
 
 # print("Generating mainstates")
@@ -148,4 +148,4 @@ while State.updated:
         mainstate.update_value()
 
 print("Saving to files")
-save_nodes("optimized_nodes", mainstates, interstates)
+save_nodes("optimized_nodes_", mainstates, interstates)

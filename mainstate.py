@@ -72,7 +72,11 @@ class Mainstate(State):
         return ((self.card == Card.DOUBLE) + 1) * (reward + bonus * 500)
 
     def update_value(self):
-        self.value = max(self.value, max([child.value for child in self.children]))
+        if len(self.children) > 0:
+            m = max([child.value for child in self.children])
+            if m > self.value:
+                self.value = m
+                State.updated = True
 
     def toJSON(self) -> dict:
         return {
@@ -87,7 +91,7 @@ class Mainstate(State):
     def fromJSON(json: dict) -> "Mainstate":
         dice: Dice = Dice(0, 0, 0, 0, 0, 0)
         for k, v in json["dice"].items():
-            dice.counts[DiceFace(k)] = v
+            dice.counts[DiceFace(int(k))] = v
         card: Card = Card(json["card"])
         mainstate: Mainstate = Mainstate(dice, card)
         mainstate.value = json["value"]
