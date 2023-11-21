@@ -1,5 +1,6 @@
 from definitions.definitions import *
 from definitions.state import State
+from game.game import Game
 
 
 class Mainstate(State):
@@ -23,60 +24,7 @@ class Mainstate(State):
             return Dice.dice_difference(self.dice, ideal_next_states[0].dice)
 
     def fold_value(self) -> int:
-        skulls: int = self.dice.counts[DiceFace.SKULL]
-
-        if self.card == Card.REROLL_SKULL:
-            skulls -= 1
-        elif self.card == Card.TWO_SKULLS:
-            skulls += 2
-        elif self.card == Card.SKULL:
-            skulls += 1
-
-        reward: int = 0
-        bonus: bool = True
-
-        counts: dict[DiceFace, int] = self.dice.counts.copy()
-
-        if self.card == Card.GOLD:
-            counts[DiceFace.GOLD] += 1
-        elif self.card == Card.DIAMOND:
-            counts[DiceFace.DIAMOND] += 1
-        elif self.card == Card.MONKEYS_PARROTS:
-            counts[DiceFace.MONKEY] += counts[DiceFace.PARROT]
-            counts[DiceFace.PARROT] = 0
-
-        if skulls >= 3:
-            # if self.card == Card.SAVE:
-            #     raise NotImplementedError
-            for k in counts.keys():
-                counts[k] = 0
-                bonus = False
-
-        if self.card == Card.TWO_SWORDS:
-            if counts[DiceFace.SWORD] >= 2:
-                reward += 300
-            else:
-                return -300
-        elif self.card == Card.THREE_SWORDS:
-            if counts[DiceFace.SWORD] >= 3:
-                reward += 500
-            else:
-                return -500
-        elif self.card == Card.FOUR_SWORDS:
-            if counts[DiceFace.SWORD] >= 4:
-                reward += 1000
-            else:
-                return -1000
-
-        reward += (counts[DiceFace.GOLD] + counts[DiceFace.DIAMOND]) * 100
-
-        for key in counts.keys():
-            if key == DiceFace.SKULL or (key in [DiceFace.PARROT, DiceFace.SWORD, DiceFace.MONKEY] and counts[key] < 3):
-                bonus = False
-            else:
-                reward += REWARDS_TABLE[counts[key]]
-
-        return ((self.card == Card.DOUBLE) + 1) * (reward + bonus * 500)
+        return Game.get_score(self.dice, self.card, False)
 
     def update_value(self):
         if len(self.children) > 0:

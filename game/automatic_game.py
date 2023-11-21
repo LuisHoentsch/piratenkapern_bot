@@ -12,6 +12,10 @@ class AutomaticGame(Game):
             l.append(random.choice(list(DiceFace)))
         return Dice.from_list_of_faces(l)
 
+    @staticmethod
+    def random_card() -> Card:
+        return random.choice([i for i in list(Card) if i != Card.NONE])
+
     def __init__(self):
         super().__init__(random.choice(list(Card)), AutomaticGame.throw_n_dice(8))
 

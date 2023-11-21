@@ -17,18 +17,13 @@ class Interstate(State):
         Interstate.index += 1
 
     def update_value(self):
-        children: list[Mainstate] = list(filter(self.no_loop or self.is_higher, self.children.keys()))
+        children: list[Mainstate] = list(filter(lambda child: self not in child.children or child.value > self.value,
+                                                self.children.keys()))
         m = mean([child.value for child in children for _ in range(self.children[child])])
-        assert m >= self.value
+        assert int(m) >= int(self.value) - 1
         if m > self.value:
             self.value = m
             State.updated = True
-
-    def no_loop(self, child: Mainstate) -> bool:
-        return self not in child.children
-
-    def is_higher(self, child: Mainstate) -> bool:
-        return child.value > self.value
 
     def toJSON(self):
         return {

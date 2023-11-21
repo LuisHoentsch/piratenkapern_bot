@@ -1,10 +1,10 @@
-from enum import Enum
+from enum import IntEnum
 from numbers import Number
 
 REWARDS_TABLE = [0, 0, 0, 100, 200, 500, 1000, 2000, 4000, 8000]
 
 
-class DiceFace(Enum):
+class DiceFace(IntEnum):
     GOLD = 1
     DIAMOND = 2
     SKULL = 3
@@ -13,7 +13,7 @@ class DiceFace(Enum):
     SWORD = 6
 
 
-class Card(Enum):
+class Card(IntEnum):
     GOLD = 1
     DIAMOND = 2
     SKULL = 3
@@ -47,9 +47,15 @@ class Dice:
             k.value: v for k, v in self.counts.items()
         }
 
+    def equals(self, other: "Dice") -> bool:
+        return all([self.counts[k] == other.counts[k] for k in self.counts.keys()])
+
     def copy(self) -> "Dice":
         return Dice(self.counts[DiceFace.GOLD], self.counts[DiceFace.DIAMOND], self.counts[DiceFace.SKULL],
                     self.counts[DiceFace.MONKEY], self.counts[DiceFace.PARROT], self.counts[DiceFace.SWORD])
+
+    def __str__(self) -> str:
+        return "\n".join([f"{key.name}: {self.counts[key]}" for key in self.counts.keys()])
 
     @staticmethod
     def from_list_of_faces(l: list[DiceFace]) -> "Dice":

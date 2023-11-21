@@ -5,7 +5,6 @@ from definitions.definitions import Card, DiceFace, Dice
 import json
 from game.automatic_game import AutomaticGame
 
-
 df = pd.read_csv('outputs/ideal_moves.csv', index_col=0)
 df["card"] = df["card"].apply(lambda x: Card(x))
 df["ideal_move"] = df["ideal_move"].apply(lambda x: json.loads(x))
@@ -31,19 +30,23 @@ def get_move(dice: Dice, card: Card, pirate_island: bool) -> tuple[Dice, Card]:
 
 total_score: int = 0
 game: AutomaticGame = AutomaticGame()
-n_rounds: int = 1000
+n_rounds: int = 10000
 
 for _ in range(n_rounds):
     game = AutomaticGame()
     dice, card, game_over, pirate_island = game.get_state()
     while not game.game_over:
-        move = get_move(dice, card, pirate_island)
+        move: tuple[Dice, Card] = get_move(dice, card, pirate_island)
         print(f"\nYour card is {card.name}")
-        print("Your dice (ideal reroll):\n" + "\n".join([f"{key.name}: {dice.counts[key]} ({move[0].counts[key]})" for key in dice.counts.keys()]))
+        print("Your dice (ideal reroll):\n" + "\n".join(
+            [f"{key.name}: {dice.counts[key]} ({move[0].counts[key]})" for key in dice.counts.keys()]))
         game.act(*move)
         dice, card, game_over, pirate_island = game.get_state()
 
-    print(f"\nYour final score is {game.get_score()}")
-    total_score += game.get_score()
+    if AutomaticGame.get_score(dice, card, pirate_island) < 0:
+        print("Your dice:\n" + "\n".join(
+            [f"{key.name}: {dice.counts[key]}" for key in dice.counts.keys()]))
+    print(f"\nYour final score is {AutomaticGame.get_score(dice, card, pirate_island)}")
+    total_score += AutomaticGame.get_score(dice, card, pirate_island)
 
 print(f"\nYour average score is {total_score / n_rounds} (total score: {total_score})")

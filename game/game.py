@@ -55,26 +55,27 @@ class Game:
 
     def get_state(self) -> tuple[Dice, Card, bool, bool]:
         return self.dice, self.card, self.game_over, self.pirate_island
-        
-    def get_score(self) -> int:
+
+    @staticmethod
+    def get_score(dice: Dice, card: Card, pirate_island: bool) -> int:
         reward: int = 0
         bonus: bool = True
 
-        counts: dict[DiceFace, int] = self.dice.counts.copy()
+        counts: dict[DiceFace, int] = dice.counts.copy()
 
-        if self.card == Card.GOLD:
+        if card == Card.GOLD:
             counts[DiceFace.GOLD] += 1
-        elif self.card == Card.DIAMOND:
+        elif card == Card.DIAMOND:
             counts[DiceFace.DIAMOND] += 1
-        elif self.card == Card.MONKEYS_PARROTS:
+        elif card == Card.MONKEYS_PARROTS:
             counts[DiceFace.MONKEY] += counts[DiceFace.PARROT]
             counts[DiceFace.PARROT] = 0
-        elif self.card == Card.SKULL:
+        elif card == Card.SKULL:
             counts[DiceFace.SKULL] += 1
-        elif self.card == Card.TWO_SKULLS:
+        elif card == Card.TWO_SKULLS:
             counts[DiceFace.SKULL] += 2
 
-        if self.pirate_island:
+        if pirate_island:
             return 100 * counts[DiceFace.SKULL]
 
         if counts[DiceFace.SKULL] >= 3:
@@ -84,17 +85,17 @@ class Game:
                 counts[k] = 0
                 bonus = False
 
-        if self.card == Card.TWO_SWORDS:
+        if card == Card.TWO_SWORDS:
             if counts[DiceFace.SWORD] >= 2:
                 reward += 300
             else:
                 return -300
-        elif self.card == Card.THREE_SWORDS:
+        elif card == Card.THREE_SWORDS:
             if counts[DiceFace.SWORD] >= 3:
                 reward += 500
             else:
                 return -500
-        elif self.card == Card.FOUR_SWORDS:
+        elif card == Card.FOUR_SWORDS:
             if counts[DiceFace.SWORD] >= 4:
                 reward += 1000
             else:
@@ -103,9 +104,13 @@ class Game:
         reward += (counts[DiceFace.GOLD] + counts[DiceFace.DIAMOND]) * 100
 
         for key in counts.keys():
-            if key == DiceFace.SKULL or (key in [DiceFace.PARROT, DiceFace.SWORD, DiceFace.MONKEY] and counts[key] < 3):
+            if key in [DiceFace.PARROT, DiceFace.SWORD, DiceFace.MONKEY] and counts[key] in [1, 2]:
                 bonus = False
+            elif key == DiceFace.SKULL:
+                continue
             else:
                 reward += REWARDS_TABLE[counts[key]]
+        if dice.counts[DiceFace.SKULL] > 0:
+            bonus = False
 
-        return ((self.card == Card.DOUBLE) + 1) * (reward + bonus * 500)
+        return ((card == Card.DOUBLE) + 1) * (reward + bonus * 500)

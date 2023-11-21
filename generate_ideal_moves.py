@@ -113,38 +113,39 @@ def to_move_df(mainstates: list[Mainstate]) -> pd.DataFrame:
     return pd.DataFrame(rows_list)
 
 
-generate: bool = True
-if generate:
-    print("Generating mainstates")
-    mainstates = generate_mainstates()
-    print("Generating interstates")
-    interstates = generate_interstates()
+if __name__ == '__main__':
+    generate: bool = True
+    if generate:
+        print("Generating mainstates")
+        mainstates = generate_mainstates()
+        print("Generating interstates")
+        interstates = generate_interstates()
 
-    print("Adding children for mainstates")
-    for mainstate in tqdm(mainstates):
-        add_children_for_mainstate(mainstate, interstates)
+        print("Adding children for mainstates")
+        for mainstate in tqdm(mainstates):
+            add_children_for_mainstate(mainstate, interstates)
 
-    print("Adding children for interstates")
-    for interstate in tqdm(interstates):
-        add_children_for_interstate(interstate, mainstates)
+        print("Adding children for interstates")
+        for interstate in tqdm(interstates):
+            add_children_for_interstate(interstate, mainstates)
+
+        print("Saving to files")
+        save_nodes("outputs/nodes_", mainstates, interstates)
+    else:
+        print("Loading nodes")
+        mainstates, interstates = load_nodes("outputs/nodes_")
+
+    print("Starting optimization loop")
+    while State.updated:
+        print("\tUpdating values...")
+        State.updated = False
+        for interstate in interstates:
+            interstate.update_value()
+        for mainstate in mainstates:
+            mainstate.update_value()
 
     print("Saving to files")
     save_nodes("outputs/nodes_", mainstates, interstates)
-else:
-    print("Loading nodes")
-    mainstates, interstates = load_nodes("outputs/nodes_")
 
-print("Starting optimization loop")
-while State.updated:
-    print("\tUpdating values...")
-    State.updated = False
-    for interstate in interstates:
-        interstate.update_value()
-    for mainstate in mainstates:
-        mainstate.update_value()
-
-print("Saving to files")
-save_nodes("outputs/nodes_", mainstates, interstates)
-
-df_ideal_moves = to_move_df(mainstates)
-df_ideal_moves.to_csv("outputs/ideal_moves.csv")
+    df_ideal_moves = to_move_df(mainstates)
+    df_ideal_moves.to_csv("outputs/ideal_moves.csv")
