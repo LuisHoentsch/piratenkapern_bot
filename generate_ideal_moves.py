@@ -4,8 +4,8 @@ import pandas as pd
 
 from tqdm import tqdm
 
-from mainstate import *
-from interstate import Interstate
+from definitions.mainstate import *
+from definitions.interstate import Interstate
 
 
 def distribute_balls(total_balls, total_cups) -> list[tuple[int, int, int, int, int, int]]:
@@ -50,6 +50,8 @@ def add_children_for_mainstate(mainstate: Mainstate, interstates: list[Interstat
         if difference.counts[DiceFace.SKULL] > 1:
             continue
         if difference.counts[DiceFace.SKULL] == 1 and not (mainstate.card == Card.REROLL_SKULL and interstate.card == Card.NONE):
+            continue
+        if mainstate.card != interstate.card and (mainstate.card != Card.REROLL_SKULL or interstate.card != Card.NONE):
             continue
         mainstate.children.add(interstate)
 
@@ -104,14 +106,14 @@ def to_move_df(mainstates: list[Mainstate]) -> pd.DataFrame:
             "dice_monkey": mainstate.dice.counts[DiceFace.MONKEY],
             "dice_parrot": mainstate.dice.counts[DiceFace.PARROT],
             "dice_sword": mainstate.dice.counts[DiceFace.SWORD],
-            "card": mainstate.card.name,
+            "card": mainstate.card.value,
             "value": mainstate.value,
             "ideal_move": json.dumps({k.name: v for k, v in mainstate.ideal_move().counts.items()})
         })
     return pd.DataFrame(rows_list)
 
 
-generate: bool = False
+generate: bool = True
 if generate:
     print("Generating mainstates")
     mainstates = generate_mainstates()
@@ -127,11 +129,10 @@ if generate:
         add_children_for_interstate(interstate, mainstates)
 
     print("Saving to files")
-    save_nodes("initialized_nodes_", mainstates, interstates)
+    save_nodes("outputs/nodes_", mainstates, interstates)
 else:
     print("Loading nodes")
-    # mainstates, interstates = load_nodes("initialized_nodes_")
-    mainstates, interstates = load_nodes("optimized_nodes_")
+    mainstates, interstates = load_nodes("outputs/nodes_")
 
 print("Starting optimization loop")
 while State.updated:
@@ -143,7 +144,7 @@ while State.updated:
         mainstate.update_value()
 
 print("Saving to files")
-save_nodes("optimized_nodes_", mainstates, interstates)
+save_nodes("outputs/nodes_", mainstates, interstates)
 
 df_ideal_moves = to_move_df(mainstates)
-df_ideal_moves.to_csv("ideal_moves.csv")
+df_ideal_moves.to_csv("outputs/ideal_moves.csv")

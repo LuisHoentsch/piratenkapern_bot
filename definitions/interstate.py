@@ -1,6 +1,6 @@
-from definitions import *
-from state import State
-from mainstate import Mainstate
+from definitions.definitions import *
+from definitions.state import State
+from definitions.mainstate import Mainstate
 
 
 class Interstate(State):

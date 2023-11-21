@@ -1,7 +1,7 @@
 /initialized_nodes_interstates.json
 /initialized_nodes_mainstates.json
 /__pycache__
+/definitions/__pycache__
+/game/__pycache__
 /.idea
-/bak
-*.json
-ideal_moves.csv
+/outputs

@@ -1,4 +1,4 @@
-from definitions import *
+from definitions.definitions import *
 
 
 class State:

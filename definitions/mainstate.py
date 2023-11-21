@@ -1,5 +1,5 @@
-from definitions import *
-from state import State
+from definitions.definitions import *
+from definitions.state import State
 
 
 class Mainstate(State):
@@ -9,7 +9,7 @@ class Mainstate(State):
         super().__init__(dice, card)
         assert self.dice.sum() == 8
 
-        self.children: set[State] = set()  # why cant I use Interstate? Circular import?
+        self.children: set[State] = set()  # TODO: why cant I use Interstate? Circular import?
         self.value: float = self.fold_value()
 
         self.instance: int = Mainstate.index
