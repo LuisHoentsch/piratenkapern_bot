@@ -2,6 +2,7 @@ from definitions.definitions import *
 
 
 class State:
+    index: int = 0
     updated: bool = True
 
     def __init__(self, dice: Dice, card: Card):

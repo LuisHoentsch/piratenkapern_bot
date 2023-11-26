@@ -87,12 +87,12 @@ def load_nodes(prefix: str) -> tuple[list[Mainstate], list[Interstate]]:
         mainstates_json = json.loads(f.read())
     with open(prefix + "interstates.json", "r") as f:
         interstates_json = json.loads(f.read())
-    mainstates: dict[int, Mainstate] = {x["instance"]: Mainstate.fromJSON(x) for x in mainstates_json}  # TODO: list instead?
+    mainstates: dict[int, Mainstate] = {x["instance"]: Mainstate.fromJSON(x) for x in mainstates_json}
     interstates: dict[int, Interstate] = {x["instance"]: Interstate.fromJSON(x) for x in interstates_json}
-    for i in range(len(mainstates)):
-        mainstates[i].children = [interstates[j] for j in mainstates_json[i]["children"]]
-    for i in range(len(interstates)):
-        interstates[i].children = {mainstates[int(k)]: v for k, v in interstates_json[i]["children"].items()}
+    for index, instance in enumerate(mainstates.keys()):
+        mainstates[instance].children = [interstates[j] for j in mainstates_json[index]["children"]]
+    for index, instance in enumerate(interstates):
+        interstates[instance].children = {mainstates[int(k)]: v for k, v in interstates_json[index]["children"].items()}
     return list(mainstates.values()), list(interstates.values())
 
 
@@ -114,7 +114,7 @@ def to_move_df(mainstates: list[Mainstate]) -> pd.DataFrame:
 
 
 if __name__ == '__main__':
-    generate: bool = True
+    generate: bool = False
     if generate:
         print("Generating mainstates")
         mainstates = generate_mainstates()

@@ -1,5 +1,4 @@
 import pandas as pd
-from tqdm import tqdm
 
 from definitions.definitions import Card, DiceFace, Dice
 import json
@@ -37,13 +36,13 @@ for _ in range(n_rounds):
     dice, card, game_over, pirate_island = game.get_state()
     while not game.game_over:
         move: tuple[Dice, Card] = get_move(dice, card, pirate_island)
-        print(f"\nYour card is {card.name}")
-        print("Your dice (ideal reroll):\n" + "\n".join(
-            [f"{key.name}: {dice.counts[key]} ({move[0].counts[key]})" for key in dice.counts.keys()]))
+        # print(f"\nYour card is {card.name}")
+        # input("Your dice (ideal reroll):\n" + "\n".join(
+        #     [f"{key.name}: {dice.counts[key]} ({move[0].counts[key]})" for key in dice.counts.keys()]))
         game.act(*move)
         dice, card, game_over, pirate_island = game.get_state()
 
-    if AutomaticGame.get_score(dice, card, pirate_island) < 0:
+    if AutomaticGame.get_score(dice, card, pirate_island) <= 0:
         print("Your dice:\n" + "\n".join(
             [f"{key.name}: {dice.counts[key]}" for key in dice.counts.keys()]))
     print(f"\nYour final score is {AutomaticGame.get_score(dice, card, pirate_island)}")

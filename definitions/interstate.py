@@ -4,7 +4,6 @@ from definitions.mainstate import Mainstate
 
 
 class Interstate(State):
-    index: int = 0
 
     def __init__(self, dice: Dice, card: Card):
         super().__init__(dice, card)
@@ -13,8 +12,8 @@ class Interstate(State):
         self.children: dict[Mainstate, int] = {}
         self.value: float = -1000
 
-        self.instance: int = Interstate.index
-        Interstate.index += 1
+        self.instance: int = State.index
+        State.index += 1
 
     def update_value(self):
         children: list[Mainstate] = list(filter(lambda child: self not in child.children or child.value > self.value,

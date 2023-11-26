@@ -4,7 +4,6 @@ from game.game import Game
 
 
 class Mainstate(State):
-    index: int = 0
 
     def __init__(self, dice: Dice, card: Card):
         super().__init__(dice, card)
@@ -13,8 +12,8 @@ class Mainstate(State):
         self.children: set[State] = set()  # TODO: why cant I use Interstate? Circular import?
         self.value: float = self.fold_value()
 
-        self.instance: int = Mainstate.index
-        Mainstate.index += 1
+        self.instance: int = State.index
+        State.index += 1
 
     def ideal_move(self) -> Dice:
         ideal_next_states: list[State] = list(filter(lambda x: x.value == self.value, self.children))
