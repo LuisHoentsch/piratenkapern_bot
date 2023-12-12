@@ -103,11 +103,11 @@ class Game:
 
         reward += (counts[DiceFace.GOLD] + counts[DiceFace.DIAMOND]) * 100
 
-        for key in counts.keys():
+        for key in DiceFace: # counts.keys():
+            if key == DiceFace.SKULL:
+                continue
             if key in [DiceFace.PARROT, DiceFace.SWORD, DiceFace.MONKEY] and counts[key] in [1, 2]:
                 bonus = False
-            elif key == DiceFace.SKULL:
-                continue
             else:
                 reward += REWARDS_TABLE[counts[key]]
         if dice.counts[DiceFace.SKULL] > 0:

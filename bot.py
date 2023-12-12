@@ -29,20 +29,21 @@ def get_move(dice: Dice, card: Card, pirate_island: bool) -> tuple[Dice, Card]:
 
 total_score: int = 0
 game: AutomaticGame = AutomaticGame()
-n_rounds: int = 10000
+n_rounds: int = 1000
 
 for _ in range(n_rounds):
     game = AutomaticGame()
     dice, card, game_over, pirate_island = game.get_state()
     while not game.game_over:
         move: tuple[Dice, Card] = get_move(dice, card, pirate_island)
-        # print(f"\nYour card is {card.name}")
-        # input("Your dice (ideal reroll):\n" + "\n".join(
-        #     [f"{key.name}: {dice.counts[key]} ({move[0].counts[key]})" for key in dice.counts.keys()]))
+        print(f"\nYour card is {card.name}")
+        input("Your dice (ideal reroll):\n" + "\n".join(
+            [f"{key.name}: {dice.counts[key]} ({move[0].counts[key]})" for key in dice.counts.keys()]))
         game.act(*move)
         dice, card, game_over, pirate_island = game.get_state()
 
     if AutomaticGame.get_score(dice, card, pirate_island) <= 0:
+        print(f"\n\n\nYour card is {card.name}")
         print("Your dice:\n" + "\n".join(
             [f"{key.name}: {dice.counts[key]}" for key in dice.counts.keys()]))
     print(f"\nYour final score is {AutomaticGame.get_score(dice, card, pirate_island)}")

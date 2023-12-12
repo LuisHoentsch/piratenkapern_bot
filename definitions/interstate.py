@@ -18,8 +18,9 @@ class Interstate(State):
     def update_value(self):
         children: list[Mainstate] = list(filter(lambda child: self not in child.children or child.value > self.value,
                                                 self.children.keys()))
-        m = mean([child.value for child in children for _ in range(self.children[child])])
-        assert int(m) >= int(self.value) - 1
+        m: float = mean([child.value for child in children for _ in range(self.children[child])])
+
+        assert int(m) >= int(self.value) - 1  # m >= self.value
         if m > self.value:
             self.value = m
             State.updated = True

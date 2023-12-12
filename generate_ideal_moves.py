@@ -38,20 +38,21 @@ def generate_mainstates() -> list[Mainstate]:
 
 
 def generate_interstates() -> list[Interstate]:
+    # TODO: Not all interstates can be reached...? E.g. more than 2 skulls -> ???
     combinations: list[Dice] = generate_combinations(6) + generate_combinations(5)
     return [Interstate(dice, card) for dice in combinations for card in Card]
 
 
 def add_children_for_mainstate(mainstate: Mainstate, interstates: list[Interstate]):
     for interstate in interstates:
+        if mainstate.card != interstate.card and (mainstate.card != Card.REROLL_SKULL or interstate.card != Card.NONE):
+            continue
         difference: Dice = Dice.dice_difference(mainstate.dice, interstate.dice)
         if difference.abs_sum() not in [2, 3] or difference.negative_values():
             continue
         if difference.counts[DiceFace.SKULL] > 1:
             continue
         if difference.counts[DiceFace.SKULL] == 1 and not (mainstate.card == Card.REROLL_SKULL and interstate.card == Card.NONE):
-            continue
-        if mainstate.card != interstate.card and (mainstate.card != Card.REROLL_SKULL or interstate.card != Card.NONE):
             continue
         mainstate.children.add(interstate)
 
@@ -68,8 +69,10 @@ def number_of_possible_paths(difference: Dice) -> int:
 
 def add_children_for_interstate(interstate: Interstate, mainstates: list[Mainstate]):
     for mainstate in mainstates:
+        if interstate.card != mainstate.card:
+            continue
         difference: Dice = Dice.dice_difference(mainstate.dice, interstate.dice)
-        if difference.abs_sum() not in [2, 3] or difference.negative_values() or interstate.card != mainstate.card:
+        if difference.abs_sum() not in [2, 3] or difference.negative_values():
             continue
         assert mainstate not in interstate.children
         interstate.children[mainstate] = number_of_possible_paths(difference)
@@ -114,7 +117,7 @@ def to_move_df(mainstates: list[Mainstate]) -> pd.DataFrame:
 
 
 if __name__ == '__main__':
-    generate: bool = False
+    generate: bool = True
     if generate:
         print("Generating mainstates")
         mainstates = generate_mainstates()

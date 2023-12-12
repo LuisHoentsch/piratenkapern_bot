@@ -14,7 +14,7 @@ class AutomaticGame(Game):
 
     @staticmethod
     def random_card() -> Card:
-        return random.choice([i for i in list(Card) if i != Card.NONE])
+        return random.choice([i for i in list(Card) if i != Card.NONE])  # TODO: Why does this not exclude Card.NONE
 
     def __init__(self):
         super().__init__(random.choice(list(Card)), AutomaticGame.throw_n_dice(8))
